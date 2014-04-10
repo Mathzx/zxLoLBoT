@@ -1,0 +1,18 @@
+#Configure
+You can make certain changes to the bot using configure.
+
+	import zxlolbot
+	bot = zxlolbot.zxLoLBoT("username", "password")
+	bot.configure(helpCommand=False)
+	bot.connect()
+
+List of parameters:
+
+* admin - the summoner ID of someone able to run admin commands. Summoner Names can be used instead if a riot api key is provided.
+* admins - Same as above except for lists of admins.
+* riotApiKey - Riot api developper key. More about it in the documentation. ([Riot api](#))
+* helpCommand - Disable the help command
+* notAdminMessage - The message to send when someone tries to use an admin command but isn't an admin. Default is None
+* someoneAddedMessage - The message to send when someone added you and logs on for the first time. Default is Thank you for adding me.\nType help to start
+* someoneOnlineMessage - The message to send when someone logs on. Also sends this to everyone after logging on. Default is None
+* invalidCommandMessage - The message to send when someone says something or uses a command that doesn,t exist. Default is None

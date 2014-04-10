@@ -1,5 +1,5 @@
 #zxLoLBoT
-An easy to use framework for writing league of legends chat bots using the xmpp protocol.
+An easy to use python 3 framework for writing league of legends chat bots using the xmpp protocol.
 ###Requires:
 * sleekxmpp ([Download here](http://sleekxmpp.com))
 * dnspython ([Download here](http://dnspython.org))

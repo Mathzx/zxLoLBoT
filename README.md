@@ -3,8 +3,10 @@ An easy to use framework for writing league of legends chat bots using the xmpp 
 ###Requires:
 * sleekxmpp ([Download here](http://sleekxmpp.com))
 * dnspython ([Download here](http://dnspython.org))
+
 ###Setup
 Just add zxlolbot.py to your project.
+
 ###Documentation:
 * [Getting started](doc/gettingStarted.md)
 * [Decorator botcommand](doc/decorator.md)
@@ -14,6 +16,7 @@ Just add zxlolbot.py to your project.
 * [Riot api](doc/riotapi.md)
 * [List of functions](doc/functions.md)
 * [Examples](examples/)
+
 ###Demo
 I made a somewhat simple bot as a demo using this framework.
 
@@ -42,7 +45,8 @@ I also took the time to show how easy it would be to create a widget showing the
 List of commands:
 
 * hello -  Replies hello to the sender
-* help - list of available commands. 
+* help - list of available commands.
+
 #####Explanation
 Commands are created by decorating zxlolbot.botcommand. (Documentation: [Decorator botcommand](doc/decorator.md))
 

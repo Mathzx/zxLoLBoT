@@ -27,21 +27,22 @@ I also took the time to show how easy it would be to create a widget showing the
 [Demo widget](http://mathzx.com/zxlolbot.php)
 ###Examples
 ####Basic hello world bot
+```python
+import zxlolbot
 
-	import zxlolbot
+botcommand = zxlolbot.botcommand
+class example(zxlolbot.zxLoLBoT):
+	def __init__(self, username, password, region="NA"):
+		zxlolbot.zxLoLBoT.__init__(self, username, password, region)
 
-	botcommand = zxlolbot.botcommand
-	class example(zxlolbot.zxLoLBoT):
-		def __init__(self, username, password, region="NA"):
-			zxlolbot.zxLoLBoT.__init__(self, username, password, region)
-
-		@botcommand
-		def hello(self, sender, args):
-			"""Replies hello to the sender"""
-			self.message(sender, "hello")
-	if __name__ == "__main__":
-		bot = example("username", "password")
-		bot.connect()
+	@botcommand
+	def hello(self, sender, args):
+		"""Replies hello to the sender"""
+		self.message(sender, "hello")
+if __name__ == "__main__":
+	bot = example("username", "password")
+	bot.connect()
+```
 List of commands:
 
 * hello -  Replies hello to the sender
@@ -67,25 +68,27 @@ Same thing for admin-only commands.
 
 You can also disable the help command with configure method. (Documentation: [Configuration](doc/configure.md))
 ####Using events
-	import zxlolbot
+```python
+import zxlolbot
 
-	botcommand = zxlolbot.botcommand
-	class example(zxlolbot.zxLoLBoT):
-		def __init__(self, username, password, region="NA"):
-			zxlolbot.zxLoLBoT.__init__(self, username, password, region)
-			self.add_event_handler("message", self.onMessage)
+botcommand = zxlolbot.botcommand
+class example(zxlolbot.zxLoLBoT):
+	def __init__(self, username, password, region="NA"):
+		zxlolbot.zxLoLBoT.__init__(self, username, password, region)
+		self.add_event_handler("message", self.onMessage)
 
-		def onMessage(self, args):
-			"""Handler for the message event.
-			args is a dictionary with specific keys.
-			args["sender"]  - The JID of the person the message is coming from.
-			args["message"] - The message.
-			args["summonerId"] - The summoner ID of the person the message is coming from."""
-			print(args["summonerId"] + " said " + args["message"])
+	def onMessage(self, args):
+		"""Handler for the message event.
+		args is a dictionary with specific keys.
+		args["sender"]  - The JID of the person the message is coming from.
+		args["message"] - The message.
+		args["summonerId"] - The summoner ID of the person the message is coming from."""
+		print(args["summonerId"] + " said " + args["message"])
 
-	if __name__ == "__main__":
-		bot = example("username", "password")
-		bot.connect()
+if __name__ == "__main__":
+	bot = example("username", "password")
+	bot.connect()
+```
 ####Explanation
 Events are added by using add_event_handler.
 

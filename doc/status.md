@@ -6,7 +6,8 @@ Creating a status:
     bot = zxlolbot.zxLoLBoT("username", "password")
     bot.connect()
     bot.setStatus(level=30, statusMsg="Version 1.0")
-![]statusBasic.png)
+![](statusBasic.PNG)
+
 List of available parameters:
 
 * profileIcon - This doesn't actually change your icon but it should. I need to check into it
@@ -27,4 +28,5 @@ List of available parameters:
 setStatus remembers your previous status settings. You don't have to include all previous one you've made to newer one if for example you just wanna change statusMsg.
 
 You can spoof most of the data above, Example:
-![](statusSpoof.png)
+
+![](statusSpoof.PNG)

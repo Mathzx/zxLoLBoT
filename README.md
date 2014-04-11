@@ -30,12 +30,11 @@ I also took the time to show how easy it would be to create a widget showing the
 ```python
 import zxlolbot
 
-botcommand = zxlolbot.botcommand
 class example(zxlolbot.zxLoLBoT):
 	def __init__(self, username, password, region="NA"):
 		zxlolbot.zxLoLBoT.__init__(self, username, password, region)
 
-	@botcommand
+	@zxlolbot.botcommand
 	def hello(self, sender, args):
 		"""Replies hello to the sender"""
 		self.message(sender, "hello")
@@ -71,7 +70,6 @@ You can also disable the help command with configure method. (Documentation: [Co
 ```python
 import zxlolbot
 
-botcommand = zxlolbot.botcommand
 class example(zxlolbot.zxLoLBoT):
 	def __init__(self, username, password, region="NA"):
 		zxlolbot.zxLoLBoT.__init__(self, username, password, region)

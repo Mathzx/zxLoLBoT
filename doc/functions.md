@@ -5,25 +5,25 @@ Connects to the server and logs on.
 ###configure(**kwargs)
 More about [configure](doc/configure.md) in the documentation.
 ###message(to, message, newline=True)
-* to: JID of the person you want to message
-* message: self explanatory
-* newline: If set to true, the message will start with ~\n
+* **to** - JID of the person you want to message
+* **message** - self explanatory
+* **newline** - If set to true, the message will start with ~\n
 
 ###message_all(message, newline)
-* message: self explanatory
-* newline: If set to true, the message wil start with ~\n
+* **message** - self explanatory
+* **newline** - If set to true, the message wil start with ~\n
 
-###add_event_handler(eventType, handler)
+###add_event_handler(event_type, handler)
 More about [events](doc/events.md) in the documentation.
 ###set_status(**kwargs)
 More about [status](doc/status.md) in the documentation.
-###summoner_id_to_name(summonerId)
+###summoner_id_to_name(summoner_id)
 Requires a riot api key to be configured using [configure](doc/configure)
 
 More about [riot api](doc/riotapi.md) in the documentation.
 
 Returns the summoner Name if found, None otherwise
-###summoner_name_to_id(summonerName)
+###summoner_name_to_id(summoner_name)
 Requires a riot api key to be configured using [configure](doc/configure)
 
 More about [riot api](doc/riotapi.md) in the documentation.

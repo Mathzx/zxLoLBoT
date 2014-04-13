@@ -7,9 +7,9 @@ Once you get your key, you can use it with your bot using the [configure](doc/co
 ```python
 bot.configure(riot_api_key="YOUR_API_HERE")
 ```
-###summoner_id_to_name(summonerId)
+###summoner_id_to_name(summoner_id)
 Returns the name if the id is valid, otherwise it returns None
-###summoner_name_to_id(summonerName)
+###summoner_name_to_id(summoner_name)
 Returns the id if the name is valid, otherwise it returns None
 ###has_riot_api_key()
 Returns true if an api key was configured, false otherwise.

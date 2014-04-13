@@ -186,7 +186,7 @@ class zxLoLBoT():
                 elif self.not_admin_message:
                     self.message(sender, self.not_admin_message)
             elif self.invalid_command_message:
-                self.message(sender, self.invalid_command_message)
+                self.message(sender, self.invalid_command_message.replace("%COMMAND%", command))
 
             #Event handling
             summoner_id = self.jid_to_summoner_id(sender)

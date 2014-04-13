@@ -111,7 +111,7 @@ class zxLoLBoT():
         if self.riot_api_key:
             if summoner_id not in self.summoner_ids_to_name:
                 self.summoner_ids_to_name[summoner_id] = self.summoner_id_to_name(summoner_id)
-            self.fire_event("someone_added", who=self.summoner_ids_to_name[summoner_id])
+            self.fire_event("someone_added", who=str(presence["from"]), summoner_name=self.summoner_ids_to_name[summoner_id])
             self.logger.debug(self.summoner_ids_to_name[summoner_id] + " just added you")
         else:
             self.fire_event("someone_added", who=str(presence["from"]))
@@ -120,11 +120,11 @@ class zxLoLBoT():
     def on_xmpp_presence_unsubscribe(self, presence):
         """Handler for XMPP presence unsubscribes"""
 
-        if self.riot_api_key:
-            if summoner_id not in self.summoner_ids_to_name:
-                self.summoner_ids_to_name[summoner_id] = self.summoner_id_to_name(summoner_id)
-            self.fire_event("someone_removed", who=self.summoner_ids_to_name[summoner_id])
+        summoner_id = self.jid_to_summoner_id(presence["from"])
+        if self.riot_api_key and summoner_id in self.summoner_ids_to_name:
+            self.fire_event("someone_removed", who=str(presence["from"]), summoner_name=self.summoner_ids_to_name[summoner_id])
             self.logger.debug(self.summoner_ids_to_name[summoner_id] + " just removed you")
+            self.summoner_ids_to_name.pop(summoner_id, None)
         else:
             self.logger.debug(str(presence["from"]) + " just removed you")
             self.fire_event("someone_removed", who=str(presence["from"]))
@@ -374,7 +374,7 @@ class zxLoLBoT():
 
     def jid_to_summoner_id(self, jid):
         """Cuts the summoner_id out of a jid and return it"""
-        
+
         jid = str(jid)
         if jid[0:3] == "sum": #Valid jid containing a summoner_id
             return str(jid[3:jid.find("@")])

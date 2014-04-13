@@ -8,6 +8,7 @@ Creating a status:
     bot.set_status(level=30, status_msg="Version 1.0")
 
 ![](statusBasic.PNG)
+
 List of available parameters:
 
 * profile_icon - This doesn't actually change your icon but it should. I need to check into it

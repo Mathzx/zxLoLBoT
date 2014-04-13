@@ -5,11 +5,12 @@ You can get one by signing up [here](https://developer.riotgames.com).
 
 Once you get your key, you can use it with your bot using the [configure](doc/configure.md) method.
 
-	bot.configure(riotApiKey="YOUR_API_HERE")
+	bot.configure(riot_api_key="YOUR_API_HERE")
 
-###summonerIdToName(summonerId)
+###summoner_id_to_name(summonerId)
 Returns the name if the id is valid, otherwise it returns None
-###summonerNameToId(summonerName)
+###summoner_name_to_id(summonerName)
 Returns the id if the name is valid, otherwise it returns None
-
-You can also convert JIDs to summoner ID using jidToSummonerId. Returns the summoner ID if one is found otherwise it returns None.
+###has_riot_api_key()
+Returns true if an api key was configured, false otherwise.
+You can also convert JIDs to summoner ID using jid_to_summoner_id. Returns the summoner ID if one is found otherwise it returns None.

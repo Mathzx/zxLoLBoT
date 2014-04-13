@@ -6,36 +6,44 @@ Using events is simple and only requires you to register an handler to a specifi
 Someone sent a message
 
 * sender - JID of the person who sent the message
-* summonerId - Summoner ID from the person who sent the message
-* summonerName - This arg is only provided if a riot api key has been configured using [configure](configure.md)
+* summoner_id - Summoner ID from the person who sent the message
+* summoner_name - This arg is only provided if a riot api key has been configured using [configure](configure.md)
 * message - Self explanatory
-####gotOnline
+
+####failed_auth
+Invalid username/password
+####got_online
 You just showed up as online.
 
 No arg for this one.
-####gotOffline
+####got_offline
 You just got disconnected.
 
 No arg for this one.
-####someoneOnline
+####someone_online
 Someone just logged on
 
 * who - JID of the person who just logged on
-####someoneOffline
+
+####someone_online
 Someone just logged off
 
 * who - JID of the person who just logged off
-####someoneAdded
+
+####someone_added
 Someone just added you
-####someoneAddedOnline
+
+* who - JID of the person who just added you.
+
+####someone_added_online
 Someone who added you just logged on for the first time.
 
-Perfect time to message them with how the bot works. Can also be configured using someoneAddedMessage
+Perfect time to message them with how the bot works. Can also be configured with someone_added_message
 
-*who - JID of the person who just added you and logged on for the first time
-* who - JID of the person who just added you.
+* who - JID of the person who just added you and logged on for the first time
+
 Keep in mind that the bot auto-accepts people adding it
-####someoneRemoved
+####someone_remove
 Someone just removed you from their friendlist
 
 * who - JID of the person who just removed you

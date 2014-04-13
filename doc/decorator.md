@@ -29,4 +29,9 @@ Admin command:
 Using a name other than the method name:
 
     @zxlolbot.botcommand(name="custom")
+Require an arguement to get executed.
+
+	@zxlolbot.botcommand(need_arg=True)
+Keep in mind that you can change the message if need_arg is set to true and a command is called without arguement by changing need_arg_message in configure.
+
 You can obviously use more than one option at the same time

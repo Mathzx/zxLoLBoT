@@ -1,12 +1,10 @@
 #zxLoLBoT
-An easy to use python 3 framework for writing league of legends chat bots using the xmpp protocol.
+An easy to use framework for writing league of legends chat bots using the xmpp protocol.
 ###Requires:
 * sleekxmpp ([Download here](http://sleekxmpp.com))
 * dnspython ([Download here](http://dnspython.org))
-
 ###Setup
 Just add zxlolbot.py to your project.
-
 ###Documentation:
 * [Getting started](doc/gettingStarted.md)
 * [Decorator botcommand](doc/decorator.md)
@@ -16,7 +14,6 @@ Just add zxlolbot.py to your project.
 * [Riot api](doc/riotapi.md)
 * [List of functions](doc/functions.md)
 * [Examples](examples/)
-
 ###Demo
 I made a somewhat simple bot as a demo using this framework.
 
@@ -27,26 +24,24 @@ I also took the time to show how easy it would be to create a widget showing the
 [Demo widget](http://mathzx.com/zxlolbot.php)
 ###Examples
 ####Basic hello world bot
-```python
-import zxlolbot
 
-class example(zxlolbot.zxLoLBoT):
-	def __init__(self, username, password, region="NA"):
-		zxlolbot.zxLoLBoT.__init__(self, username, password, region)
+	import zxlolbot
 
-	@zxlolbot.botcommand
-	def hello(self, sender, args):
-		"""Replies hello to the sender"""
-		self.message(sender, "hello")
-if __name__ == "__main__":
-	bot = example("username", "password")
-	bot.connect()
-```
+	class example(zxlolbot.zxLoLBoT):
+		def __init__(self, username, password, region="NA"):
+			zxlolbot.zxLoLBoT.__init__(self, username, password, region)
+
+		@zxlolbot.botcommand
+		def hello(self, sender, args):
+			"""Replies hello to the sender"""
+			self.message(sender, "hello")
+	if __name__ == "__main__":
+		bot = example("username", "password")
+		bot.connect()
 List of commands:
 
 * hello -  Replies hello to the sender
-* help - list of available commands.
-
+* help - list of available commands. 
 #####Explanation
 Commands are created by decorating zxlolbot.botcommand. (Documentation: [Decorator botcommand](doc/decorator.md))
 
@@ -64,29 +59,29 @@ You can hide commands from the help command by decorating it this way:
 Same thing for admin-only commands.
 
     @botcommand(Admin=True)
+There are more options for the decorator in the [documentation](doc/decorator.md)
 
-You can also disable the help command with configure method. (Documentation: [Configuration](doc/configure.md))
+You can also disable the help command with configure method. (Documentation: [Configuration](doc/configure.md)) or by [using unregister_command](doc/functions.md)
 ####Using events
-```python
-import zxlolbot
+	import zxlolbot
 
-class example(zxlolbot.zxLoLBoT):
-	def __init__(self, username, password, region="NA"):
-		zxlolbot.zxLoLBoT.__init__(self, username, password, region)
-		self.add_event_handler("message", self.onMessage)
+	botcommand = zxlolbot.botcommand
+	class example(zxlolbot.zxLoLBoT):
+		def __init__(self, username, password, region="NA"):
+			zxlolbot.zxLoLBoT.__init__(self, username, password, region)
+			self.add_event_handler("message", self.on_message)
 
-	def onMessage(self, args):
-		"""Handler for the message event.
-		args is a dictionary with specific keys.
-		args["sender"]  - The JID of the person the message is coming from.
-		args["message"] - The message.
-		args["summonerId"] - The summoner ID of the person the message is coming from."""
-		print(args["summonerId"] + " said " + args["message"])
+		def on_message(self, args):
+			"""Handler for the message event.
+			args is a dictionary with specific keys.
+			args["sender"]  - The JID of the person the message is coming from.
+			args["message"] - The message.
+			args["summoner_id"] - The summoner ID of the person the message is coming from."""
+			print(args["summoner_id"] + " said " + args["message"])
 
-if __name__ == "__main__":
-	bot = example("username", "password")
-	bot.connect()
-```
+	if __name__ == "__main__":
+		bot = example("username", "password")
+		bot.connect()
 ####Explanation
 Events are added by using add_event_handler.
 

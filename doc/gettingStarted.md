@@ -17,10 +17,10 @@ At this point you can create commands by decoration zxlolbot.botcommand:
 
 You can also add events using add_event_handler:
 
-    self.add_event_handler("message", self.onMessage)
+    self.add_event_handler("message", self.on_message)
 Then creating onMessage:
 
-    def onMessage(self, args):
+    def on_message(self, args):
         """Handler for message event"""
         print(args["sender"] + ": " + args["message"])
 Then it's a matter of initializing the class and connecting it
@@ -33,9 +33,9 @@ Complete code:
     class helloworld(zxlolbot.zxLoLBoT):
         def __init__(self, username, password, region="NA"):
             zxlolbot.zxLoLBoT.__init__(self, username, password, region)
-            self.add_event_handler("message", self.onMessage)
+            self.add_event_handler("message", self.on_message)
 
-        def onMessage(self, args):
+        def on_message(self, args):
             """Handler for message event"""
             print(args["sender"] + ": " + args["message"])
 

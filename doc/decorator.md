@@ -25,7 +25,7 @@ test hello
 args would be ['hello']
 
 ```python
-    test hello, world
+test hello, world
 ```
 
 args would be ['hello', 'world']
@@ -39,7 +39,7 @@ Hidden command from help:
 Admin command:
 
 ```python
-    @zxlolbot.botcommand(admin=True)
+@zxlolbot.botcommand(admin=True)
 ```
 
 Using a name other than the method name:

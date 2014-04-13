@@ -4,9 +4,9 @@ Well first of all to uset his riot api you need to get yourself a developper key
 You can get one by signing up [here](https://developer.riotgames.com).
 
 Once you get your key, you can use it with your bot using the [configure](doc/configure.md) method.
-
-	bot.configure(riot_api_key="YOUR_API_HERE")
-
+```python
+bot.configure(riot_api_key="YOUR_API_HERE")
+```
 ###summoner_id_to_name(summonerId)
 Returns the name if the id is valid, otherwise it returns None
 ###summoner_name_to_id(summonerName)

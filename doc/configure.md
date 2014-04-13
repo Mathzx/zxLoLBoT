@@ -1,14 +1,19 @@
 #Configure
 You can make certain changes to the bot using configure.
 
-	import zxlolbot
-	bot = zxlolbot.zxLoLBoT("username", "password")
-	bot.configure(help_command=False)
-	bot.connect()
+```python
+import zxlolbot
+bot = zxlolbot.zxLoLBoT("username", "password")
+bot.configure(help_command=False)
+bot.connect()
+```
 
 The example above would disable the help command. Keep in mind you can also unregister the help command using:
 
-	bot.unregister_command("help")
+```python
+bot.unregister_command("help")
+```
+
 List of parameters:
 
 * admin - the summoner ID of someone able to run admin commands. Summoner Names can be used instead if a riot api key is provided.

@@ -1,11 +1,12 @@
 #Status
 Creating a status:
+```python
+import zxlolbot
 
-    import zxlolbot
-
-    bot = zxlolbot.zxLoLBoT("username", "password")
-    bot.connect()
-    bot.set_status(level=30, status_msg="Version 1.0")
+bot = zxlolbot.zxLoLBoT("username", "password")
+bot.connect()
+bot.set_status(level=30, status_msg="Version 1.0")
+```
 
 ![](statusBasic.PNG)
 

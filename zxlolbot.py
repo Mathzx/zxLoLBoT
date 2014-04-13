@@ -201,7 +201,7 @@ class zxLoLBoT():
         """Handler for XMPP failed authentication event"""
 
         self.logger.fatal("Invalid username/password provided")
-        sys.fire_event("failed_auth")
+        self.fire_event("failed_auth")
         sys.exit(-1)
 
     def configure(self, **kwargs):

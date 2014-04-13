@@ -25,9 +25,9 @@ List of available parameters:
 * **ranked_losses** - Amount of ranked losses. Obsolete at the moment.
 * **ranked_wins** - Amount of ranked wins. Obsolete at the moment.
 * **skinname** - Name of the champion you are playing if gameStatus is inGame
-* **game_status** - Can be either: inGame, outOfgame
+* **game_status** - Can be either: inGame, outOfgame, hostingPraticeGame, championSelect, spectating, inQueue
 
-set_status remembers your previous status settings. You don't have to include all previous one you've made to newer one if for example you just wanna change statusMsg.
+set_status remembers your previous status settings. You don't have to include all previous one you've made to newer one if for example you just wanna change status_msg.
 
 You can spoof most of the data above, Example:
 

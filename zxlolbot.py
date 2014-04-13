@@ -48,24 +48,41 @@ class zxLoLBoT():
         logging.getLogger('sleekxmpp').setLevel(logging.WARNING) #Gets rid of sleekxmpp logging unless important
 
         #XMPP
-        self.xmpp              = sleekxmpp.ClientXMPP(username+"@pvp.net/xiff", "AIR_"+password)
+        self.xmpp                       = sleekxmpp.ClientXMPP(username+"@pvp.net/xiff", "AIR_"+password)
 
         #Server
-        self.servers           = {"NA" : "chat.na1.lol.riotgames.com",
-                                  "EUW": "chat.eu.lol.riotgames.com",
-                                  "EUNE": "chat.eun1.lol.riotgames.com"}
-
-        self.port              = 5223
+        self.server                     = 'chat.%REGION%.lol.riotgames.com'
+        self.regions                    = {"BR":"br", "EUN": "eun1",
+                                           "EUW": "eu", "NA": "na1",
+                                           "KR": "kr", "OCE": "oc1",
+                                           "RU": "ru", "TR": "tr"}
+        self.port                       = 5223
         
         #Account
-        self.username          = username
-        self.password          = password
-        self.riot_api_key      = None
-        self.region            = region
-        self.recently_added    = []
-        self.friends_online    = [] #TODO: something to do with this
-        self.status            = {}
-        self.admins            = []
+        self.username                   = username
+        self.password                   = password
+        self.riot_api_key               = None
+        self.region                     = region
+        self.recently_added             = []
+        self.friends_online             = [] #TODO: something to do with this
+        self.status                     = {}
+        self.admins                     = []
+
+        #Commands
+        self.help_command               = True
+        self.commands                   = {}
+
+        #Misc
+        self.summoner_ids_to_name       = {}
+        self.logger                     = logging.getLogger(__name__)
+
+        #Custom messages
+        self.not_admin_message          = None
+        self.someone_added_message      = "Thank you for adding me.\nType help to start"
+        self.someone_online_message     = None
+        self.invalid_command_message    = None
+        self.need_arg_message           = "Invalid usage of %COMMAND%\nPlease use help %COMMAND%"
+
 
         #XMPP Events
         self.xmpp.add_event_handler("presence_unsubscribe", self.on_xmpp_presence_unsubscribe)
@@ -77,24 +94,9 @@ class zxLoLBoT():
         self.xmpp.add_event_handler("disconnected", self.on_xmpp_disconnected)
         self.xmpp.add_event_handler("message", self.on_xmpp_message)
 
-        #Commands
-        self.help_command              = True
-        self.commands                  = {}
-
-        #Misc
-        self.summoner_ids_to_name      = {}
-        self.logger                    = logging.getLogger(__name__)
-
-        #Custom messages
-        self.not_admin_message         = None
-        self.someone_added_message     = "Thank you for adding me.\nType help to start"
-        self.someone_online_message    = None
-        self.invalid_command_message   = None
-        self.need_arg_message          = "Invalid usage of %COMMAND%\nPlease use help %COMMAND%"
-
         #Testing region and registering commands
-        if region not in self.servers.keys():
-            self.logger.critical("Invalid region.(only NA, EUNE and EUW are accepted)")
+        if region.upper() not in self.regions.keys():
+            self.logger.critical("Invalid region.(only " + ", ".join(self.regions.keys())+" are accepted)")
             sys.exit(-1)
         for name, value in inspect.getmembers(self):
             if callable(value) and getattr(value, "__zxLoLBoT_command", False):
@@ -142,7 +144,6 @@ class zxLoLBoT():
 
     def on_xmpp_got_online(self, presence):
         """Handler for XMPP got online event"""
-
         if presence["from"] != self.xmpp.boundjid:
             self.friends_online.append(str(presence["from"]))
             self.xmpp.send_presence(pto=presence["from"], ptype="chat", pstatus=self.get_status())
@@ -177,7 +178,8 @@ class zxLoLBoT():
                 args = []
             if command in self.commands.keys():
                 adminCommand = getattr(self.commands[command], "__zxLoLBoT_command_admin", False)
-                if (adminCommand and self.is_admin(sender)) or not adminCommand: #Checks if it's an administrator-only command and if the sender is an admin
+                 #Checks if it's an administrator-only command and if the sender is an admin
+                if (adminCommand and self.is_admin(sender)) or not adminCommand:
                     if getattr(self.commands[command], "__zxLoLBoT_command_need_arg", False) and not args:
                         if self.need_arg_message:
                             self.message(sender, self.need_arg_message.replace("%COMMAND%", command))
@@ -230,7 +232,7 @@ class zxLoLBoT():
 
     def connect(self):
         """Attempts to connect to the XMPP server"""
-        serverIp = dns.resolver.query(self.servers[self.region])
+        serverIp = dns.resolver.query(self.server.replace("%REGION%", self.regions[self.region.upper()]))
         if len(serverIp):
             if self.xmpp.connect((str(serverIp[0]), self.port), use_ssl=True):
                 self.xmpp.process(block=False)
@@ -313,7 +315,11 @@ class zxLoLBoT():
 
         if self.riot_api_key:
             try:
-                source = urllib.request.urlopen("http://prod.api.pvp.net/api/lol/"+urllib.parse.quote(self.region.lower())+"/v1.4/summoner/"+urllib.parse.quote(str(summoner_id))+"/name?api_key="+urllib.parse.quote(self.riot_api_key))
+                source = urllib.request.urlopen("http://prod.api.pvp.net/api/lol/"+
+                                                urllib.parse.quote(self.region.lower())+
+                                                "/v1.4/summoner/"+
+                                                urllib.parse.quote(str(summoner_id))
+                                                +"/name?api_key="+urllib.parse.quote(self.riot_api_key))
             except urllib.error.HTTPError as err:
                 if err.code == 401: #Unauthorized
                         self.logger.warning("An api request has been attempted with an invalid riot api key.")
@@ -339,7 +345,11 @@ class zxLoLBoT():
 
         if self.riot_api_key:
             try:
-                source = urllib.request.urlopen("http://prod.api.pvp.net/api/lol/"+urllib.parse.quote(self.region.lower())+"/v1.4/summoner/by-name/"+urllib.parse.quote(summoner_name)+"?api_key="+urllib.parse.quote(self.riot_api_key)).read().decode()
+                source = urllib.request.urlopen("http://prod.api.pvp.net/api/lol/"+
+                                                urllib.parse.quote(self.region.lower())+
+                                                "/v1.4/summoner/by-name/"+
+                                                urllib.parse.quote(summoner_name)+
+                                                "?api_key="+urllib.parse.quote(self.riot_api_key)).read().decode()
             except urllib.error.HTTPError as err:
                 if err.code == 401: #Unauthorized
                         self.logger.warning("An api request has been attempted with an invalid riot api key.")
@@ -364,6 +374,7 @@ class zxLoLBoT():
 
     def jid_to_summoner_id(self, jid):
         """Cuts the summoner_id out of a jid and return it"""
+        
         jid = str(jid)
         if jid[0:3] == "sum": #Valid jid containing a summoner_id
             return str(jid[3:jid.find("@")])
@@ -389,7 +400,8 @@ class zxLoLBoT():
     def add_admin(self, admin):
         """Add an admin to the admins list.
         If the admin is numerical then we assume it's a summoner_id and add it directly to the admin list.
-        Otherwise if the admin has characters we assume it's a summoner_name and we attempt getting the summoner_id using the riot api. (Require self.riot_api_key)"""
+        If the admin has characters we assume it's a summoner_name and we attempt getting the summoner_id using the riot api.
+        (Require self.riot_api_key)"""
 
         admin = str(admin)
         error = False

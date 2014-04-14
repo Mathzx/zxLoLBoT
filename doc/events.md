@@ -12,20 +12,19 @@ Someone sent a message
 
 ####failed_auth
 Invalid username/password
+
 ####got_online
 You just showed up as online.
 
-No arg for this one.
 ####got_offline
 You just got disconnected.
 
-No arg for this one.
 ####someone_online
 Someone just logged on
 
 * **who** - JID of the person who just logged on
 
-####someone_online
+####someone_offline
 Someone just logged off
 
 * **who** - JID of the person who just logged off
@@ -34,6 +33,7 @@ Someone just logged off
 Someone just added you
 
 * **who** - JID of the person who just added you.
+* **summoner_name** (Optional) - Summoner name of the person who just got online.
 
 ####someone_added_online
 Someone who added you just logged on for the first time.
@@ -47,3 +47,4 @@ Keep in mind that the bot auto-accepts people adding it
 Someone just removed you from their friendlist
 
 * **who** - JID of the person who just removed you
+* **summoner_name** (Optional) - Summoner name of the person who just got offline.

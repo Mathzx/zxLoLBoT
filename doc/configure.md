@@ -23,5 +23,6 @@ List of parameters:
 * **not_admin_message** - The message to send when someone tries to use an admin command but isn't an admin. Default is None
 * **someone_added_message** - The message to send when someone added you and logs on for the first time. Default is Thank you for adding me.\nType help to start
 * **someone_online_message** - The message to send when someone logs on. Also sends this to everyone after logging on. Default is None
-* **invalid_command_message** - The message to send when someone says something or uses a command that doesn,t exist. Default is None. **%COMMAND%** gets replaced by the name of the command.
-* **need_arg_message** - The message to send when someone uses a command that was configured with need_arg. If set to none. **%COMMAND%** gets replaced by the name of the command.
+* **invalid_command_message** - The message to send when someone says something or uses a command that doesn,t exist. Default is None. **%COMMAND%** gets replaced by the name of the command. Default is None
+* **need_arg_message** - The message to send when someone uses a command that was configured with need_arg. If set to none. **%COMMAND%** gets replaced by the name of the command. Default is "Invalid usage of %COMMAND%\nPlease use help %COMMAND%"
+* **room_invite_message** - The message to send when someoen tries inviting you to a private room. Default is "I'm sorry, I don't join private rooms!"

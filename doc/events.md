@@ -48,3 +48,8 @@ Someone just removed you from their friendlist
 
 * **who** - JID of the person who just removed you
 * **summoner_name** (Optional) - Summoner name of the person who just got offline.
+
+####got_friendlist
+Done getting the summoner IDS of all your friends in your friendlist after logging on
+
+* **friends** - List of summoner ids

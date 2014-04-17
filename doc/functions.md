@@ -43,6 +43,8 @@ If a riot api key was provided, admin can be a name.
 Mostly the same as above except it removes it instead of adding it.
 ###get_admins()
 Returns the list of admins (Summoner ids)
+###get_friends()
+Return the list of all your friends wether they are offline or online (summoner ids)
 ###get_friends_online()
 Returns the list of onlien friends (Summoner ids)
 ###unregister_command(command_name)

@@ -25,18 +25,20 @@ except ImportError:
     logging.getLogger(__name__).fatal("You need to install dnspython from http://www.dnspython.org")
     sys.exit(-1)
 
+logging.getLogger('sleekxmpp').setLevel(logging.WARNING) #Gets rid of sleekxmpp logging unless important
+
 def botcommand(*args, **kwargs):
     """Decorator for bot command function"""
 
     def decorate(function, hidden=False, admin=False, name=None, need_arg=False):
-        setattr(function, "__zxLoLBoT_command", True)
-        setattr(function, "__zxLoLBoT_command_name", name or function.__name__)
-        setattr(function, "__zxLoLBoT_command_admin", admin)
-        setattr(function, "__zxLoLBoT_command_need_arg", need_arg)
-        setattr(function, "__zxLoLBoT_command_hidden", hidden)
+        function._zxLoLBoT_command = True
+        function._zxLoLBoT_command_name = name or function.__name__
+        function._zxLoLBoT_command_admin = admin
+        function._zxLoLBoT_command_hidden = hidden
+        function._zxLoLBoT_command_need_arg = need_arg
         return function
 
-    if len(args):
+    if args:
         return decorate(args[0], **kwargs)
     else:
         return lambda function: decorate(function, **kwargs)
@@ -44,8 +46,6 @@ def botcommand(*args, **kwargs):
 class zxLoLBoT():
     def __init__(self, username, password, region="NA"):
         """Initializes the bot and sets up commands."""
-
-        logging.getLogger('sleekxmpp').setLevel(logging.WARNING) #Gets rid of sleekxmpp logging unless important
 
         #XMPP
         self.xmpp                       = sleekxmpp.ClientXMPP(username+"@pvp.net/xiff", "AIR_"+password)
@@ -64,6 +64,7 @@ class zxLoLBoT():
         self.riot_api_key               = None
         self.region                     = region
         self.recently_added             = []
+        self.friends                    = []
         self.friends_online             = [] #TODO: something to do with this
         self.status                     = {}
         self.admins                     = []
@@ -82,7 +83,7 @@ class zxLoLBoT():
         self.someone_online_message     = None
         self.invalid_command_message    = None
         self.need_arg_message           = "Invalid usage of %COMMAND%\nPlease use help %COMMAND%"
-
+        self.room_invite_message        = "I'm sorry, I don't join private rooms!"
 
         #XMPP Events
         self.xmpp.add_event_handler("presence_unsubscribe", self.on_xmpp_presence_unsubscribe)
@@ -93,16 +94,26 @@ class zxLoLBoT():
         self.xmpp.add_event_handler("session_start", self.on_xmpp_start)
         self.xmpp.add_event_handler("disconnected", self.on_xmpp_disconnected)
         self.xmpp.add_event_handler("message", self.on_xmpp_message)
+        self.xmpp.add_event_handler("roster_update", self.on_xmpp_roster_update, disposable=True)
+        self.xmpp.add_event_handler("groupchat_invite", None) #Ends up goign to on_xmpp_message
 
         #Testing region and registering commands
-        if region.upper() not in self.regions.keys():
+        if region.upper() not in self.regions:
             self.logger.critical("Invalid region.(only " + ", ".join(self.regions.keys())+" are accepted)")
             sys.exit(-1)
         for name, value in inspect.getmembers(self):
-            if callable(value) and getattr(value, "__zxLoLBoT_command", False):
-                name = getattr(value, "__zxLoLBoT_command_name")
+            if callable(value) and hasattr(value, "_zxLoLBoT_command"):
+                name = value._zxLoLBoT_command_name
                 self.commands[name] = value
                 self.logger.debug("Registered bot command: " + name)
+
+    def on_xmpp_roster_update(self, roster):
+        """Handler for roster update event"""
+        for item in roster["roster"]["items"]:
+            if item not in self.friends:
+                self.friends.append(self.jid_to_summoner_id(item))
+        if self.friends:
+            self.fire_event("got_friendlist", friends=self.friends)
 
     def on_xmpp_presence_subscribe(self, presence):
         """Handler for XMPP presence subscribes"""
@@ -116,6 +127,8 @@ class zxLoLBoT():
         else:
             self.fire_event("someone_added", who=str(presence["from"]))
             self.logger.debug(str(presence["from"]) + " just added you")
+        if summoner_id not in self.friends:
+            self.friends.append(summoner_id)
 
     def on_xmpp_presence_unsubscribe(self, presence):
         """Handler for XMPP presence unsubscribes"""
@@ -124,10 +137,12 @@ class zxLoLBoT():
         if self.riot_api_key and summoner_id in self.summoner_ids_to_name:
             self.fire_event("someone_removed", who=str(presence["from"]), summoner_name=self.summoner_ids_to_name[summoner_id])
             self.logger.debug(self.summoner_ids_to_name[summoner_id] + " just removed you")
-            self.summoner_ids_to_name.pop(summoner_id, None)
+            self.summoner_ids_to_name.pop(str(summoner_id), None)
         else:
             self.logger.debug(str(presence["from"]) + " just removed you")
             self.fire_event("someone_removed", who=str(presence["from"]))
+        if summoner_id in self.friends:
+            self.friends.remove(summoner_id)
 
     def on_xmpp_start(self, e):
         """Handler for XMPP session start event"""
@@ -144,6 +159,7 @@ class zxLoLBoT():
 
     def on_xmpp_got_online(self, presence):
         """Handler for XMPP got online event"""
+
         if presence["from"] != self.xmpp.boundjid:
             self.friends_online.append(str(presence["from"]))
             self.xmpp.send_presence(pto=presence["from"], ptype="chat", pstatus=self.get_status())
@@ -167,20 +183,19 @@ class zxLoLBoT():
     def on_xmpp_message(self, message):
         """Handler for XMPP incoming messages event"""
 
-        if message["type"] in ("chat", "normal"):
+        if message["type"] == "chat":
             sender = str(message["from"])
             msg = message["body"]
-
             #Command handling
             command     = msg.split()[0]
             args         = msg[len(command)+1:].split(", ")
             if not args[0]:
                 args = []
-            if command in self.commands.keys():
-                adminCommand = getattr(self.commands[command], "__zxLoLBoT_command_admin", False)
+            if command in self.commands:
+                adminCommand = getattr(self.commands[command], "_zxLoLBoT_command_admin", False)
                  #Checks if it's an administrator-only command and if the sender is an admin
                 if (adminCommand and self.is_admin(sender)) or not adminCommand:
-                    if getattr(self.commands[command], "__zxLoLBoT_command_need_arg", False) and not args:
+                    if getattr(self.commands[command], "_zxLoLBoT_command_need_arg", False) and not args:
                         if self.need_arg_message:
                             self.message(sender, self.need_arg_message.replace("%COMMAND%", command))
                     else:
@@ -193,11 +208,15 @@ class zxLoLBoT():
             #Event handling
             summoner_id = self.jid_to_summoner_id(sender)
             if self.riot_api_key:
-                if summoner_id not in self.summoner_ids_to_name.keys():
+                if summoner_id not in self.summoner_ids_to_name:
                     self.summoner_ids_to_name[summoner_id] = self.summoner_id_to_name(summoner_id)
                 self.fire_event("message", sender=sender, message=msg, summoner_id=summoner_id, summoner_name=self.summoner_ids_to_name[summoner_id])
             else:
                 self.fire_event("message", sender=sender, message=msg, summoner_id=summoner_id)
+        elif message["type"] == "normal" and str(message["from"])[2:3] == "~": #Groupchat invite
+            inviter = message["body"][0:message["body"].find(" ")]
+            if self.room_invite_message:
+                self.message(inviter, self.room_invite_message)
 
     def on_xmpp_failed_auth(self, error):
         """Handler for XMPP failed authentication event"""
@@ -218,6 +237,7 @@ class zxLoLBoT():
         self.someone_online_message  = kwargs.get("someone_online_message", self.someone_online_message)
         self.invalid_command_message = kwargs.get("invalid_command_message", self.invalid_command_message)
         self.need_arg_message        = kwargs.get("need_arg_message", self.need_arg_message)
+        self.room_invite_message     = kwargs.get("room_invite_message", self.room_invite_message)
 
         if isinstance(admins, list):
             for zadmin in admins:
@@ -226,14 +246,14 @@ class zxLoLBoT():
         if admin and admin not in self.admins:
             self.add_admin(admin)
 
-        if not self.help_command and "help" in self.commands.keys():
+        if not self.help_command and "help" in self.commands:
             self.logger.debug("Unregistered bot command: help")
             self.commands.pop("help", None)
 
     def connect(self):
         """Attempts to connect to the XMPP server"""
         serverIp = dns.resolver.query(self.server.replace("%REGION%", self.regions[self.region.upper()]))
-        if len(serverIp):
+        if serverIp:
             if self.xmpp.connect((str(serverIp[0]), self.port), use_ssl=True):
                 self.xmpp.process(block=False)
                 self.xmpp.register_plugin("xep_0199") #Ping plugin
@@ -265,36 +285,37 @@ class zxLoLBoT():
         """Adds an handler for a specific event"""
 
         if callable(function):
-            setattr(self, "__event_"+event_type, function)
+            setattr(self, "_event_"+event_type, function)
         else:
             self.logger.warning("Invalid event handler being registered for event: " + event_type)
 
     def fire_event(self, event_type, **kwargs):
         """Simple event firing function"""
 
-        if callable(getattr(self, "__event_"+event_type, None)):
+        if callable(getattr(self, "_event_"+event_type, None)):
             if kwargs.items():
-                getattr(self, "__event_"+event_type)(kwargs)
+                getattr(self, "_event_"+event_type)(kwargs)
             else:
-                getattr(self, "__event_"+event_type)()
+                getattr(self, "_event_"+event_type)()
 
     def set_status(self, **kwargs):
         """Configures variables for the status presence"""
 
-        self.status["profileIcon"]          = kwargs.get("profile_icon", self.status.get("profileIcon"))
-        self.status["level"]                = kwargs.get("level", self.status.get("level", 30))
-        self.status["statusMsg"]            = kwargs.get("status_msg", self.status.get("statusMsg"))
         self.status["wins"]                 = kwargs.get("wins", self.status.get("wins"))
+        self.status["level"]                = kwargs.get("level", self.status.get("level", 30))
         self.status["leaves"]               = kwargs.get("leaves", self.status.get("leaves"))
-        self.status["queueType"]            = kwargs.get("queue_type", self.status.get("queueType"))
-        self.status["rankedLeagueName"]     = kwargs.get("ranked_league_name", self.status.get("rankedLeagueName"))
-        self.status["rankedLeagueDivision"] = kwargs.get("ranked_league_division", self.status.get("rankedLeagueDivision"))
-        self.status["rankedLeagueTier"]     = kwargs.get("ranked_league_tier", self.status.get("rankedLeagueTier"))
-        self.status["rankedRating"]         = kwargs.get("ranked_rating", self.status.get("rankedRating"))
-        self.status["rankedLosses"]         = kwargs.get("ranked_losses", self.status.get("rankedLosses"))
-        self.status["rankedWins"]           = kwargs.get("ranked_wins", self.status.get("rankedWins"))
         self.status["skinname"]             = kwargs.get("skinname", self.status.get("skinname"))
+        self.status["queueType"]            = kwargs.get("queue_type", self.status.get("queueType"))
+        self.status["statusMsg"]            = kwargs.get("status_msg", self.status.get("statusMsg"))
+        self.status["rankedWins"]           = kwargs.get("ranked_wins", self.status.get("rankedWins"))
+        self.status["profileIcon"]          = kwargs.get("profile_icon", self.status.get("profileIcon"))
+        self.status["rankedLosses"]         = kwargs.get("ranked_losses", self.status.get("rankedLosses"))
+        self.status["rankedRating"]         = kwargs.get("ranked_rating", self.status.get("rankedRating"))
+        self.status["rankedLeagueName"]     = kwargs.get("ranked_league_name", self.status.get("rankedLeagueName"))
+        self.status["rankedLeagueTier"]     = kwargs.get("ranked_league_tier", self.status.get("rankedLeagueTier"))
         self.status["gameStatus"]           = kwargs.get("game_status", self.status.get("gameStatus", "outOfgame"))
+        self.status["rankedLeagueDivision"] = kwargs.get("ranked_league_division", self.status.get("rankedLeagueDivision"))
+        
         self.xmpp.send_presence(ptype="chat", pstatus=self.get_status())
 
     def get_status(self):
@@ -331,10 +352,7 @@ class zxLoLBoT():
             else:
                 source = source.read().decode()
                 data = json.loads(source)
-                if summoner_id in data.keys():
-                    return data[summoner_id]
-                else:
-                    return None
+                return data.get(summoner_id)
         else:
             self.logger.warning("An api request has been attempted without an api key.")
 
@@ -364,6 +382,7 @@ class zxLoLBoT():
                     return str(data[summoner_name.replace(" ", "").lower()]["id"])
                 else:
                     return None
+
         else:
             self.logger.warning("An api request has been attempted without an api key.")
 
@@ -385,6 +404,10 @@ class zxLoLBoT():
         """Returns a list of summoner ids for online friends"""
 
         return self.friends_online
+    def get_friends(self):
+        """Returns a list of summoner ids for all your friends"""
+
+        return self.friends
 
     def get_admins(self):
         """Returns a list of summoner ids for the admins"""
@@ -394,8 +417,7 @@ class zxLoLBoT():
     def is_admin(self, jid):
         """Checks if the summoner_id within the jid is an admin"""
 
-        summoner_id = self.jid_to_summoner_id(jid)
-        return summoner_id in self.admins
+        return self.jid_to_summoner_id(jid) in self.admins
 
     def add_admin(self, admin):
         """Add an admin to the admins list.
@@ -412,7 +434,7 @@ class zxLoLBoT():
                 summoner_id = self.summoner_name_to_id(admin)
                 if summoner_id:
                     self.admins.append(summoner_id)
-                    admin += " ("+summoner_id+")"
+                    admin += " ("+str(summoner_id)+")"
                 else:
                     error = True
                     self.logger.debug(admin + " is not a registered summoner or the riot api is down at the moment.")
@@ -438,7 +460,7 @@ class zxLoLBoT():
     def unregister_command(self, command_name):
         """Unregisters a command from an handler"""
 
-        if command_name in self.commands.keys():
+        if command_name in self.commands:
             self.commands.pop(command_name, None)
             self.logger.debug("Unregistered bot command: " + command_name)
         else:
@@ -452,19 +474,19 @@ class zxLoLBoT():
         reply = ""
 
         #Help for a single command
-        if len(arg):
-            if arg[0] in self.commands.keys(): #Valid command
-                hiddenCommand = getattr(self.commands[arg[0]], "__zxLoLBoT_command_hidden", False)
-                adminCommand  = getattr(self.commands[arg[0]], "__zxLoLBoT_command_admin", False)
+        if arg:
+            if arg[0] in self.commands: #Valid command
+                hiddenCommand = getattr(self.commands[arg[0]], "_zxLoLBoT_command_hidden", False)
+                adminCommand  = getattr(self.commands[arg[0]], "_zxLoLBoT_command_admin", False)
                 if (adminCommand and is_admin) or (not hiddenCommand and not adminCommand) or (hiddenCommand and is_admin):
                     doc = self.commands[arg[0]].__doc__ or "No description available"
-                    reply = "Documentation for: " + arg[0] + "\n " + doc.replace("\t", "").replace("\n", "\n ")
+                    reply = "Documentation for: " + arg[0] + "\n " + doc.replace("\t", "").replace("\n", "\n ").replace("    ", "")
         #Help for all commands
         else:
             reply += "List of available commands:\n "
             for command in sorted(self.commands):
-                hiddenCommand = getattr(self.commands[command], "__zxLoLBoT_command_hidden", False)
-                adminCommand  = getattr(self.commands[command], "__zxLoLBoT_command_admin", False)
+                hiddenCommand = getattr(self.commands[command], "_zxLoLBoT_command_hidden", False)
+                adminCommand  = getattr(self.commands[command], "_zxLoLBoT_command_admin", False)
                 if (adminCommand and is_admin) or (not hiddenCommand and not adminCommand) or (hiddenCommand and is_admin):
                     doc = self.commands[command].__doc__ or "No description available"
                     if doc != "No description available":

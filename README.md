@@ -63,7 +63,7 @@ You can hide commands from the help command by decorating it this way:
     @botcommand(hidden=True)
 Same thing for admin-only commands.
 
-    @botcommand(Admin=True)
+    @botcommand(admin=True)
 There are more options for the decorator in the [documentation](doc/decorator.md)
 
 You can also disable the help command with configure method. (Documentation: [Configuration](doc/configure.md)) or by [using unregister_command](doc/functions.md)

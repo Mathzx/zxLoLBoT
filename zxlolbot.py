@@ -8,6 +8,7 @@ An easy to use framework for writing league of legends chat bots using the xmpp 
 import sys
 import json
 import inspect
+import hashlib
 import logging
 import threading
 import urllib.error
@@ -72,6 +73,7 @@ class zxLoLBoT():
         #Commands
         self.help_command               = True
         self.commands                   = {}
+        self.command_prefix             = None
 
         #Misc
         self.summoner_ids_to_name       = {}
@@ -101,9 +103,12 @@ class zxLoLBoT():
         if region.upper() not in self.regions:
             self.logger.critical("Invalid region.(only " + ", ".join(self.regions.keys())+" are accepted)")
             sys.exit(-1)
+
         for name, value in inspect.getmembers(self):
             if callable(value) and hasattr(value, "_zxLoLBoT_command"):
                 name = value._zxLoLBoT_command_name
+                if self.command_prefix:
+                    name = self.command_prefix + name
                 self.commands[name] = value
                 self.logger.debug("Registered bot command: " + name)
 
@@ -182,13 +187,16 @@ class zxLoLBoT():
 
     def on_xmpp_message(self, message):
         """Handler for XMPP incoming messages event"""
-
-        if message["type"] == "chat":
-            sender = str(message["from"])
+        sender = str(message["from"])
+        if message["type"] == "normal" and sender[2:3] == "~": #Groupchat invite
+            inviter = message["body"][0:message["body"].find(" ")]
+            if self.room_invite_message:
+                self.message(inviter, self.room_invite_message)
+        elif message["type"] in ("chat", "groupchat") and "/" in sender:
             msg = message["body"]
-            #Command handling
             command     = msg.split()[0]
-            args         = msg[len(command)+1:].split(", ")
+            args        = msg[len(command)+1:].split(", ")
+
             if not args[0]:
                 args = []
             if command in self.commands:
@@ -230,14 +238,15 @@ class zxLoLBoT():
 
         admin                        = kwargs.get("admin", None)
         admins                       = kwargs.get("admins", None)
-        self.riot_api_key            = kwargs.get("riot_api_key", self.riot_api_key)
+        newprefix                    = kwargs.get("command_prefix", False)
         self.help_command            = kwargs.get("help_command", self.help_command)
+        self.riot_api_key            = kwargs.get("riot_api_key", self.riot_api_key)
+        self.need_arg_message        = kwargs.get("need_arg_message", self.need_arg_message)
         self.not_admin_message       = kwargs.get("not_admin_message", self.not_admin_message)
+        self.room_invite_message     = kwargs.get("room_invite_message", self.room_invite_message)
         self.someone_added_message   = kwargs.get("someone_added_message", self.someone_added_message)
         self.someone_online_message  = kwargs.get("someone_online_message", self.someone_online_message)
         self.invalid_command_message = kwargs.get("invalid_command_message", self.invalid_command_message)
-        self.need_arg_message        = kwargs.get("need_arg_message", self.need_arg_message)
-        self.room_invite_message     = kwargs.get("room_invite_message", self.room_invite_message)
 
         if isinstance(admins, list):
             for zadmin in admins:
@@ -250,6 +259,19 @@ class zxLoLBoT():
             self.logger.debug("Unregistered bot command: help")
             self.commands.pop("help", None)
 
+        if newprefix:
+            self.logger.debug("Now using command prefix: " + newprefix)
+            if self.command_prefix:
+                #Need to clean commands first
+                tmp = {}
+                for name, value in self.commands.items():
+                    tmp[name[len(self.command_prefix):]] = value
+                self.commands = tmp
+            self.command_prefix = newprefix
+            tmp = {}
+            for name, value in self.commands.items():
+                tmp[self.command_prefix+name] = value
+            self.commands = tmp
     def connect(self):
         """Attempts to connect to the XMPP server"""
         serverIp = dns.resolver.query(self.server.replace("%REGION%", self.regions[self.region.upper()]))
@@ -257,6 +279,7 @@ class zxLoLBoT():
             if self.xmpp.connect((str(serverIp[0]), self.port), use_ssl=True):
                 self.xmpp.process(block=False)
                 self.xmpp.register_plugin("xep_0199") #Ping plugin
+                self.xmpp.register_plugin("xep_0045") #MUC
                 self.logger.debug("Connection with the server established.")
                 return True
             else:
@@ -271,7 +294,11 @@ class zxLoLBoT():
 
         if newline:
             message = "~\n"+message
-        self.xmpp.send_message(mto=str(to), mbody=str(message), mtype="chat")
+        mtype = "chat"
+        if str(to)[2:3] == "~":
+            mtype = "groupchat"
+            to    = to[0:to.find("/")]
+        self.xmpp.send_message(mto=str(to), mbody=str(message), mtype=mtype)
 
     def message_all(self, message, newline=True):
         """Sends a message to everyone online."""
@@ -280,7 +307,6 @@ class zxLoLBoT():
             message = "~\n"+message
         for person in self.friends_online:
             self.xmpp.send_message(mto=str(person), mbody=str(message), mtype="chat")
-
     def add_event_handler(self, event_type, function):
         """Adds an handler for a specific event"""
 
@@ -465,6 +491,26 @@ class zxLoLBoT():
             self.logger.debug("Unregistered bot command: " + command_name)
         else:
             self.logger.warning("Tried to unregister a command called " + command_name + " that isn't registered yet")
+
+    def join_muc_room(self, room_name, room_type="pu", room_domain="lvl.pvp.net"):
+        """Joins a multi user room"""
+
+        if str(room_name)[2:3] != "~": #Not already hashed and need to manually construct the room
+            room = room_type + "~" + hashlib.sha1(room_name.encode()).hexdigest() + "@" + room_domain + "/" + self.username
+        else:
+            room = room_name + "/" + self.username
+        self.xmpp.send_presence(pto=room, pstatus=self.get_status(), pshow="groupchat")
+        return room
+        
+    def leave_muc_room(self, room_name, room_type="pu", room_domain="lvl.pvp.net"):
+        """Leaves a multi user room"""
+
+        if str(room_name)[2:3] != "~": #Not already hashed and need to manually construct the room
+            room = room_type + "~" + hashlib.sha1(room_name.encode()).hexdigest() + "@" + room_domain + "/" + self.username
+        else:
+            room = room_name + "/" + self.username
+        self.xmpp.send_presence(pto=room, pstatus=self.get_status(), pshow="unavailable")
+
     @botcommand
     def help(self, sender, arg):
         """Returns help for commands

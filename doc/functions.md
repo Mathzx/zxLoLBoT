@@ -49,5 +49,22 @@ Return the list of all your friends wether they are offline or online (summoner 
 Returns the list of onlien friends (Summoner ids)
 ###unregister_command(command_name)
 Unregisters a command.
+
+* ***command_name*** - Name of the command to unregister
+
 ###has_riot_api_key()
 Returns true if a riot api key was provided, false otherwise.
+###join_muc_room(room_name, room_type="pu", room_domain="lvl.pvp.net")
+Joins a multi-user room.
+
+* ***room_name*** - Name of the room
+* ***room_type*** - Type of the room: pr(private), pu(public)
+* ***room_domain*** - Not needed yet.
+
+###leave_muc_room(room_name, room_type="pu", room_domain="lvl.pvp.net")
+Leaves a multi-user-room
+
+* ***room_name*** - Name of the room
+* ***room_type*** - Type of the room: pr(private), pu(public)
+* ***room_domain*** - Not needed yet.
+

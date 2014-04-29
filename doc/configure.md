@@ -26,3 +26,4 @@ List of parameters:
 * **invalid_command_message** - The message to send when someone says something or uses a command that doesn,t exist. Default is None. **%COMMAND%** gets replaced by the name of the command. Default is None
 * **need_arg_message** - The message to send when someone uses a command that was configured with need_arg. If set to none. **%COMMAND%** gets replaced by the name of the command. Default is "Invalid usage of %COMMAND%\nPlease use help %COMMAND%"
 * **room_invite_message** - The message to send when someoen tries inviting you to a private room. Default is "I'm sorry, I don't join private rooms!"
+* **command_prefix** - Prefix needed for commands, ie for the prefix "!": !help, !info, !etc

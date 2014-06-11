@@ -86,7 +86,7 @@ Removes someone from your friendlist by their summoner ID
 * ***summoner_id*** - Self explanatory.
 
 ###remove_friend_by_name(self, summoner_name):
-Adds someone to your friendlist by their name.
+Removes someone to your friendlist by their name.
 
 ***Requires a riot api key***
 

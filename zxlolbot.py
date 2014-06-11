@@ -215,7 +215,7 @@ class zxLoLBoT():
 
             #Event handling
             summoner_id = self.jid_to_summoner_id(sender)
-            if self.riot_api_key:
+            if self.riot_api_key and sender[2:3] != "~":
                 if summoner_id not in self.summoner_ids_to_name:
                     self.summoner_ids_to_name[summoner_id] = self.summoner_id_to_name(summoner_id)
                 self.fire_event("message", sender=sender, message=msg, summoner_id=summoner_id, summoner_name=self.summoner_ids_to_name[summoner_id])
@@ -510,7 +510,30 @@ class zxLoLBoT():
         else:
             room = room_name + "/" + self.username
         self.xmpp.send_presence(pto=room, pstatus=self.get_status(), pshow="unavailable")
+    def add_friend_by_id(self, summoner_id):
+        """Adds someone to your friendlist by their summoner ID"""
 
+        self.xmpp.send_presence(pto="sum"+summoner_id+"@pvp.net", ptype="subscribe")
+
+    def add_friend_by_name(self, summoner_name):
+        """Adds someone to your friendlist by their name.
+        Requires a riot api key"""
+
+        if self.riot_api_key:
+            self.xmpp.send_presence(pto="sum"+self.summoner_name_to_id(summoner_name)+"@pvp.net", ptype="subscribe")
+
+    def remove_friend_by_id(self, summoner_id):
+        """Removes someone from your friendlist by their summoner ID"""
+
+        self.xmpp.send_presence(pto="sum"+summoner_id+"@pvp.net", ptype="subscribe")
+
+    def remove_friend_by_name(self, summoner_name):
+        """Adds someone to your friendlist by their name.
+        Requires a riot api key"""
+
+        if self.riot_api_key:
+            self.xmpp.send_presence(pto="sum"+self.summoner_name_to_id(summoner_name)+"@pvp.net", ptype="unsubscribe")
+            
     @botcommand
     def help(self, sender, arg):
         """Returns help for commands

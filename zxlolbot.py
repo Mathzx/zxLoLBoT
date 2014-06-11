@@ -510,6 +510,7 @@ class zxLoLBoT():
         else:
             room = room_name + "/" + self.username
         self.xmpp.send_presence(pto=room, pstatus=self.get_status(), pshow="unavailable")
+        
     def add_friend_by_id(self, summoner_id):
         """Adds someone to your friendlist by their summoner ID"""
 

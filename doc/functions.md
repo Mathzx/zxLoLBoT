@@ -68,3 +68,28 @@ Leaves a multi-user-room
 * ***room_type*** - Type of the room: pr(private), pu(public)
 * ***room_domain*** - Not needed yet.
 
+###add_friend_by_id(self, summoner_id):
+Adds someone to your friendlist by their summoner ID
+
+* ***summoner_id*** - Self explanatory.
+
+###add_friend_by_name(self, summoner_name):
+Adds someone to your friendlist by their name.
+
+***Requires a riot api key***
+
+* ***summoner_name*** - Self explanatory.
+
+###remove_friend_by_id(self, summoner_id):
+Removes someone from your friendlist by their summoner ID
+
+* ***summoner_id*** - Self explanatory.
+
+###remove_friend_by_name(self, summoner_name):
+Adds someone to your friendlist by their name.
+
+***Requires a riot api key***
+
+* ***summoner_name*** - Self explanatory.
+
+        

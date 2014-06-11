@@ -510,7 +510,7 @@ class zxLoLBoT():
         else:
             room = room_name + "/" + self.username
         self.xmpp.send_presence(pto=room, pstatus=self.get_status(), pshow="unavailable")
-        
+
     def add_friend_by_id(self, summoner_id):
         """Adds someone to your friendlist by their summoner ID"""
 
@@ -529,7 +529,7 @@ class zxLoLBoT():
         self.xmpp.send_presence(pto="sum"+summoner_id+"@pvp.net", ptype="subscribe")
 
     def remove_friend_by_name(self, summoner_name):
-        """Adds someone to your friendlist by their name.
+        """Removes someone to your friendlist by their name.
         Requires a riot api key"""
 
         if self.riot_api_key:

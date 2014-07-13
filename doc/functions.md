@@ -68,6 +68,13 @@ Leaves a multi-user-room
 * ***room_type*** - Type of the room: pr(private), pu(public)
 * ***room_domain*** - Not needed yet.
 
+###message_muc_room(self, room_name, message, room_type="pu", room_domain="lvl.pvp.net"):
+Send a message to a specific room. Keep in mind that the message won't be sent unless you are in the room.
+
+* ***room_name*** - Name of the room
+* ***message*** - Message
+* ***room_type*** - Type of the room: pr(private), pu(public)
+* ***room_domain*** - Not needed yet.
 ###add_friend_by_id(summoner_id):
 Adds someone to your friendlist by their summoner ID
 

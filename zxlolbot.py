@@ -56,7 +56,8 @@ class zxLoLBoT():
         self.regions                    = {"BR":"br", "EUN": "eun1",
                                            "EUW": "euw1", "NA": "na1",
                                            "KR": "kr", "OCE": "oc1",
-                                           "RU": "ru", "TR": "tr"}
+                                           "RU": "ru", "TR": "tr",
+                                           "LAN": "la1"}
         self.port                       = 5223
         
         #Account
@@ -103,7 +104,6 @@ class zxLoLBoT():
         if region.upper() not in self.regions:
             self.logger.critical("Invalid region.(only " + ", ".join(self.regions.keys())+" are accepted)")
             sys.exit(-1)
-
         for name, value in inspect.getmembers(self):
             if callable(value) and hasattr(value, "_zxLoLBoT_command"):
                 name = value._zxLoLBoT_command_name
@@ -511,6 +511,14 @@ class zxLoLBoT():
             room = room_name + "/" + self.username
         self.xmpp.send_presence(pto=room, pstatus=self.get_status(), pshow="unavailable")
 
+    def message_muc_room(self, room_name, message, room_type="pu", room_domain="lvl.pvp.net"):
+        """Send a message to a specific room"""
+        if str(room_name)[2:3] != "~": #Not already hashed and need to manually construct the room
+            room = room_type + "~" + hashlib.sha1(room_name.encode()).hexdigest() + "@" + room_domain + "/" + self.username
+        else:
+            room = room_name + "/" + self.username
+        self.message(room, "hello")
+        
     def add_friend_by_id(self, summoner_id):
         """Adds someone to your friendlist by their summoner ID"""
 
@@ -534,7 +542,6 @@ class zxLoLBoT():
 
         if self.riot_api_key:
             self.xmpp.send_presence(pto="sum"+self.summoner_name_to_id(summoner_name)+"@pvp.net", ptype="unsubscribe")
-            
     @botcommand
     def help(self, sender, arg):
         """Returns help for commands

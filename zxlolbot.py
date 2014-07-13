@@ -517,8 +517,8 @@ class zxLoLBoT():
             room = room_type + "~" + hashlib.sha1(room_name.encode()).hexdigest() + "@" + room_domain + "/" + self.username
         else:
             room = room_name + "/" + self.username
-        self.message(room, "hello")
-        
+        self.message(room, message)
+
     def add_friend_by_id(self, summoner_id):
         """Adds someone to your friendlist by their summoner ID"""
 

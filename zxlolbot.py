@@ -54,7 +54,7 @@ class zxLoLBoT():
         #Server
         self.server                     = 'chat.%REGION%.lol.riotgames.com'
         self.regions                    = {"BR":"br", "EUN": "eun1",
-                                           "EUW": "euw1", "NA": "na1",
+                                           "EUW": "euw1", "NA": "na2",
                                            "KR": "kr", "OCE": "oc1",
                                            "RU": "ru", "TR": "tr",
                                            "LAN": "la1"}

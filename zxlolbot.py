@@ -362,9 +362,10 @@ class zxLoLBoT():
 
         if self.riot_api_key:
             try:
-                source = urllib.request.urlopen("http://prod.api.pvp.net/api/lol/"+
-                                                urllib.parse.quote(self.region.lower())+
-                                                "/v1.4/summoner/"+
+                source = urllib.request.urlopen("http://"+urllib.parse.quote(self.region.lower()) +
+                                                ".api.pvp.net/api/lol/" +
+                                                urllib.parse.quote(self.region.lower()) +
+                                                "/v1.4/summoner/" +
                                                 urllib.parse.quote(str(summoner_id))
                                                 +"/name?api_key="+urllib.parse.quote(self.riot_api_key))
             except urllib.error.HTTPError as err:
@@ -389,10 +390,11 @@ class zxLoLBoT():
 
         if self.riot_api_key:
             try:
-                source = urllib.request.urlopen("http://prod.api.pvp.net/api/lol/"+
-                                                urllib.parse.quote(self.region.lower())+
-                                                "/v1.4/summoner/by-name/"+
-                                                urllib.parse.quote(summoner_name)+
+                source = urllib.request.urlopen("http://"+urllib.parse.quote(self.region.lower()) +
+                                                ".api.pvp.net/api/lol/" +
+                                                urllib.parse.quote(self.region.lower()) +
+                                                "/v1.4/summoner/by-name/" +
+                                                urllib.parse.quote(summoner_name) +
                                                 "?api_key="+urllib.parse.quote(self.riot_api_key)).read().decode()
             except urllib.error.HTTPError as err:
                 if err.code == 401: #Unauthorized
